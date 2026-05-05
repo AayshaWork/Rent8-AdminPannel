@@ -19,6 +19,8 @@ const connectDB = require("./config/db");  // ✔️ correct
 connectDB();  // ✔️ call
 // routes (future)
 const authRoutes = require("./routes/authRoutes");
+const propertyRoutes = require ("./routes/propertyRoutes")
+app.use("/api/property", propertyRoutes)
 app.use("/api/auth", authRoutes);
 
 app.listen(PORT, () => {

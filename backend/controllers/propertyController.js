@@ -9,3 +9,10 @@ exports.createProperty = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+
+// GET ALL
+exports.getAllProperties = async (req, res) => {
+  const data = await Property.find().populate("owner_id");
+  res.json(data);
+};
