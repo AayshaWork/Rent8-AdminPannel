@@ -14,6 +14,9 @@ app.get("/", (req, res) => {
   res.send("Backend running 🚀");
 });
 
+const connectDB = require("./config/db");  // ✔️ correct
+
+connectDB();  // ✔️ call
 // routes (future)
 const authRoutes = require("./routes/authRoutes");
 app.use("/api/auth", authRoutes);
