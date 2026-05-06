@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   // State for toggling timeframe
   const [timeframe, setTimeframe] = useState('Yearly');
   
@@ -24,11 +26,12 @@ const Dashboard = () => {
   ];
 
   // New Data for Payment Verifications Table
+ // Updated Data for Payment Verifications Table
   const recentPayments = [
-    { initials: 'AR', bg: '#eff6ff', color: '#1d4ed8', name: 'Rahul Sharma', ad: 'Luxury 3BHK in Koregaon Park', amount: '₹45,000' },
-    { initials: 'PD', bg: '#e0f2fe', color: '#0369a1', name: 'Priya Desai', ad: 'Modern Studio Apartment Baner', amount: '₹18,500' },
-    { initials: 'KV', bg: '#dcfce7', color: '#15803d', name: 'Karan Verma', ad: 'Premium Villa Wakad Phase 2', amount: '₹85,000' },
-    { initials: 'SN', bg: '#f1f5f9', color: '#334155', name: 'Sneha Nair', ad: 'Cozy 1BHK near IT Park Hinjewadi', amount: '₹22,000' },
+    { initials: 'AR', bg: '#eff6ff', color: '#1d4ed8', name: 'Rahul Sharma', ad: 'Luxury 3BHK in Koregaon Park', planType: 'Double Plan', planAmount: '₹289', date: '05 May 2026', time: '10:30 AM', fullAddress: 'Koregaon Park, Pune', contactName: 'Rahul Sharma', contactNo: '+91 98765 43210', txId: 'UTR1234567890' },
+    { initials: 'PD', bg: '#e0f2fe', color: '#0369a1', name: 'Priya Desai', ad: 'Modern Studio Apartment Baner', planType: 'Standard', planAmount: '₹200', date: '05 May 2026', time: '11:15 AM', fullAddress: 'Baner Road, Pune', contactName: 'Priya Desai', contactNo: '+91 88888 22222', txId: 'UTR9876543210' },
+    { initials: 'KV', bg: '#dcfce7', color: '#15803d', name: 'Karan Verma', ad: 'Premium Villa Wakad Phase 2', planType: 'Double Plan', planAmount: '₹289', date: '04 May 2026', time: '12:05 PM', fullAddress: 'Wakad, Pune', contactName: 'Karan Verma', contactNo: '+91 77777 66666', txId: 'UTR4567891230' },
+    { initials: 'SN', bg: '#f1f5f9', color: '#334155', name: 'Sneha Nair', ad: 'Cozy 1BHK near IT Park', planType: 'Standard', planAmount: '₹200', date: '04 May 2026', time: '09:00 AM', fullAddress: 'Hinjewadi Phase 1, Pune', contactName: 'Sneha Nair', contactNo: '+91 99999 11111', txId: 'UTR7418529630' },
   ];
 
   // Data for the Vertical Bar Chart (Heights re-calibrated for smaller box so bars look BIG)
@@ -255,31 +258,34 @@ const Dashboard = () => {
       {/* Payment Verifications & Quick Broadcast */}
       <div style={{ display: 'flex', gap: '24px', marginTop: '24px' }}>
         
-        {/* Left: Recent Payment Verifications (Box padding 24px kiya) */}
+       {/* Left: Recent Payment Verifications (Box padding 24px kiya) */}
         <div style={{ flex: 2, backgroundColor: '#fff', padding: '24px', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
           {/* Header */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
             <h3 style={{ fontSize: '20px', color: '#0f172a', margin: 0 }}>Recent Payment Verifications</h3>
-            <div style={{ color: '#6366f1', fontSize: '14px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+            <div onClick={() => navigate('/pending-approvals')} 
+            
+            style={{ color: '#6366f1', fontSize: '14px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
               View All 
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg> 
             </div>
           </div>
 
           {/* Table Container */}
           <div style={{ width: '100%' }}>
-            {/* Table Header */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 2fr 1fr 1fr', paddingBottom: '16px', borderBottom: '1px solid #f1f5f9', color: '#64748b', fontSize: '12px', fontWeight: '700', letterSpacing: '0.5px' }}>
+            {/* Table Header (5 Columns Update kiye hain) */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1.5fr 1.2fr 1fr 1fr', paddingBottom: '16px', borderBottom: '1px solid #f1f5f9', color: '#64748b', fontSize: '12px', fontWeight: '700', letterSpacing: '0.5px' }}>
               <span>USER NAME</span>
               <span>AD TITLE</span>
-              <span>AMOUNT</span>
+              <span>PLAN & AMOUNT</span>
+              <span>TIME</span>
               <span style={{ textAlign: 'right' }}>ACTION</span>
             </div>
 
             {/* Table Rows */}
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               {recentPayments.map((payment, idx) => (
-                <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1.5fr 2fr 1fr 1fr', alignItems: 'center', padding: '16px 0', borderBottom: idx !== recentPayments.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
+                <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1.5fr 1.5fr 1.2fr 1fr 1fr', alignItems: 'center', padding: '16px 0', borderBottom: idx !== recentPayments.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
                   
                   {/* User Name & Avatar */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -290,14 +296,39 @@ const Dashboard = () => {
                   </div>
 
                   {/* Ad Title */}
-                  <span style={{ color: '#64748b', fontSize: '14px' }}>{payment.ad}</span>
+                  <span style={{ color: '#64748b', fontSize: '14px', paddingRight: '10px' }}>{payment.ad}</span>
 
-                  {/* Amount */}
-                  <span style={{ color: '#0f172a', fontSize: '14px', fontWeight: '700' }}>{payment.amount}</span>
+                {/* Plan & Amount */}
+                  <div>
+                    <span style={{ 
+                      display: 'inline-block', 
+                      padding: '4px 12px', 
+                      borderRadius: '20px', 
+                      fontSize: '11px', 
+                      fontWeight: '700', 
+                      backgroundColor: payment.planType === 'Standard' ? '#e0f2fe' : (payment.planType === 'Premium' ? '#fef08a' : '#f3e8ff'), 
+                      color: payment.planType === 'Standard' ? '#0ea5e9' : (payment.planType === 'Premium' ? '#ca8a04' : '#a855f7'), 
+                      marginBottom: '6px',
+                      whiteSpace: 'nowrap'
+                    }}>
+                      {payment.planType}
+                    </span>
+                    {/* YAHAN payment.planAmount AAYEGA */}
+                    <div style={{ fontWeight: '700', color: '#0f172a', fontSize: '14px' }}>{payment.planAmount}</div>
+                  </div>
+
+                  {/* Time */}
+                  <div>
+                    <div style={{ color: '#64748b', fontSize: '13px', fontWeight: '500', marginBottom: '4px' }}>{payment.date}</div>
+                    <div style={{ color: '#94a3b8', fontSize: '12px', fontWeight: '500' }}>{payment.time}</div>
+                  </div>
 
                   {/* Action Button */}
                   <div style={{ textAlign: 'right' }}>
-                    <button style={{ backgroundColor: 'transparent', border: '1px solid #e2e8f0', color: '#6366f1', padding: '8px 16px', borderRadius: '14px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s' }}>
+                    <button 
+                      onClick={() => navigate('/pending-approvals')} 
+                      style={{ backgroundColor: 'transparent', border: '1px solid #e2e8f0', color: '#6366f1', padding: '8px 16px', borderRadius: '14px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s' }}
+                    >
                       View Proof
                     </button>
                   </div>

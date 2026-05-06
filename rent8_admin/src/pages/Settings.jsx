@@ -1,107 +1,165 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { QrCode, Settings as SettingsIcon, Upload, Calendar, ChevronDown } from 'lucide-react';
 
 const Settings = () => {
-  // Ye states aage chalkar Node.js API se connect hongi
-  const [basicPrice, setBasicPrice] = useState('200');
-  const [premiumPrice, setPremiumPrice] = useState('289');
-  const [broadcastMsg, setBroadcastMsg] = useState('');
+  // 🚀 STATES FOR PRICING & DURATIONS
+  const [standardDays, setStandardDays] = useState(8);
+  const [standardPrice, setStandardPrice] = useState(200);
+  
+  const [premiumDays, setPremiumDays] = useState(16);
+  const [premiumPrice, setPremiumPrice] = useState(289);
+
+  // 🚀 IMAGE UPLOAD LOGIC
+  const fileInputRef = useRef(null);
+  const [qrImage, setQrImage] = useState("https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=rent8@upi&pn=Rent8");
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Local file ko URL mein convert kar rahe hain preview dikhane ke liye
+      const imageUrl = URL.createObjectURL(file);
+      setQrImage(imageUrl);
+    }
+  };
+
+  const handleReplaceClick = () => {
+    // Button click hone par hidden input ko trigger karenge
+    fileInputRef.current.click();
+  };
 
   return (
-    <div style={{ maxWidth: '900px' }}>
-      <h1 style={{ fontSize: '28px', color: '#0f172a', marginBottom: '8px' }}>Admin Settings</h1>
-      <p style={{ color: '#64748b', marginBottom: '32px' }}>Global app configuration & management dashboard</p>
-
-      {/* 1. Scanner Management (QR Code) */}
-      <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', marginBottom: '24px' }}>
-        <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px', color: '#0f172a' }}>
-          <span>📷</span> Scanner Management
-        </h3>
-        <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
-          {/* Fake QR Image Box */}
-          <div style={{ width: '150px', height: '150px', border: '2px dashed #cbd5e1', borderRadius: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', backgroundColor: '#f8fafc' }}>
-             <span style={{ fontSize: '40px' }}>🔳</span>
-             <span style={{ fontSize: '10px', color: '#64748b', marginTop: '8px' }}>CURRENT ACTIVE QR</span>
-          </div>
-          <div>
-            <h4 style={{ fontSize: '18px', color: '#0f172a', marginBottom: '8px' }}>Active QR Scanner</h4>
-            <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '16px', lineHeight: '1.5' }}>
-              The current QR code is used for all active check-ins across the platform. Updating this will invalidate the previous code immediately.
-            </p>
-            <button style={{ backgroundColor: '#3b82f6', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '6px', fontWeight: '600', cursor: 'pointer' }}>
-              ↑ Upload New QR
-            </button>
-          </div>
-        </div>
+    <div style={{ padding: '32px', backgroundColor: '#f8fafc', minHeight: '100vh', fontFamily: 'system-ui' }}>
+      
+      {/* HEADER */}
+      <div style={{ marginBottom: '32px' }}>
+        <h1 style={{ fontSize: '28px', fontWeight: '800', color: '#0f172a', margin: '0 0 8px 0' }}>App Settings & Control</h1>
+        <p style={{ color: '#64748b', margin: 0 }}>Manage critical application assets and global system parameters.</p>
       </div>
 
-      {/* 2. Subscription Prices */}
-      <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', marginBottom: '24px' }}>
-        <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', color: '#0f172a' }}>
-          <span>💸</span> Subscription Prices
-        </h3>
-        <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '20px' }}>Updating these values will change the pricing shown to users in the app store real-time.</p>
+      {/* MAIN CARDS CONTAINER */}
+      <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap', alignItems: 'flex-start' }}>
         
-        <div style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
-          <div style={{ flex: 1 }}>
-            <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>Basic Plan Price (Plan 1)</label>
-            <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #e2e8f0', borderRadius: '6px', overflow: 'hidden' }}>
-              <span style={{ padding: '10px 16px', backgroundColor: '#f8fafc', color: '#64748b', borderRight: '1px solid #e2e8f0' }}>₹</span>
-              <input 
-                type="number" 
-                value={basicPrice} 
-                onChange={(e) => setBasicPrice(e.target.value)}
-                style={{ width: '100%', padding: '10px', border: 'none', outline: 'none', fontSize: '16px', fontWeight: '600' }} 
-              />
-            </div>
-            <span style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px', display: 'block' }}>Visible to: All free tier users</span>
+        {/* ========================================= */}
+        {/* 1. PAYMENT QR CODE CARD (LEFT SIDE) */}
+        {/* ========================================= */}
+        <div style={{ flex: '1', minWidth: '350px', backgroundColor: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '32px 24px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          
+          <div style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '32px' }}>
+            <QrCode size={20} color="#0ea5e9" />
+            <h2 style={{ fontSize: '16px', fontWeight: '700', color: '#0f172a', margin: 0 }}>Payment QR Code</h2>
           </div>
 
-          <div style={{ flex: 1 }}>
-            <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>Premium Plan Price (Plan 2)</label>
-            <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #e2e8f0', borderRadius: '6px', overflow: 'hidden' }}>
-              <span style={{ padding: '10px 16px', backgroundColor: '#f8fafc', color: '#64748b', borderRight: '1px solid #e2e8f0' }}>₹</span>
-              <input 
-                type="number" 
-                value={premiumPrice} 
-                onChange={(e) => setPremiumPrice(e.target.value)}
-                style={{ width: '100%', padding: '10px', border: 'none', outline: 'none', fontSize: '16px', fontWeight: '600' }} 
-              />
-            </div>
-            <span style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px', display: 'block' }}>Visible to: All users</span>
+          {/* QR Code Image Box */}
+          <div style={{ width: '220px', height: '220px', backgroundColor: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '24px', padding: '16px' }}>
+            <img src={qrImage} alt="QR Code" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '8px' }} />
           </div>
-        </div>
-        
-        <div style={{ textAlign: 'right' }}>
-          <button style={{ backgroundColor: '#0f172a', color: '#fff', border: 'none', padding: '10px 24px', borderRadius: '6px', fontWeight: '600', cursor: 'pointer' }}>
-            Update Pricing
+
+          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+            <div style={{ fontSize: '14px', fontWeight: '600', color: '#334155', marginBottom: '4px' }}>Current active QR for PhonePe/GPay</div>
+            <div style={{ fontSize: '12px', color: '#94a3b8' }}>Last updated: May 05, 2026</div>
+          </div>
+
+          {/* 🚀 HIDDEN FILE INPUT */}
+          <input 
+            type="file" 
+            accept="image/*" 
+            ref={fileInputRef} 
+            onChange={handleImageChange} 
+            style={{ display: 'none' }} 
+          />
+
+          {/* Action Buttons */}
+          <button 
+            onClick={handleReplaceClick} 
+            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', backgroundColor: '#f8fafc', color: '#475569', fontWeight: '600', cursor: 'pointer', fontSize: '14px', marginBottom: '12px', transition: 'all 0.2s' }} 
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'} 
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f8fafc'}
+          >
+            <Upload size={16} /> Replace Image
           </button>
-        </div>
-      </div>
-
-      {/* 3. Broadcast Center */}
-      <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-        <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px', color: '#0f172a' }}>
-          <span>📢</span> Broadcast Center
-        </h3>
-        
-        <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>Global Push Notification Message</label>
-        <textarea 
-          placeholder="Enter your message here to reach all users instantly..."
-          value={broadcastMsg}
-          onChange={(e) => setBroadcastMsg(e.target.value)}
-          style={{ width: '100%', height: '100px', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', resize: 'none', outline: 'none', fontSize: '14px', marginBottom: '16px' }}
-        ></textarea>
-
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontSize: '13px', color: '#d97706', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span>⚠️</span> This will send to 12,480 active users
-          </div>
-          <button style={{ backgroundColor: '#0ea5e9', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '6px', fontWeight: '600', cursor: 'pointer' }}>
-            ➤ Send Push Notification to All Users
+          
+          <button style={{ width: '100%', padding: '12px', borderRadius: '8px', border: 'none', backgroundColor: '#0ea5e9', color: '#fff', fontWeight: '600', cursor: 'pointer', fontSize: '14px', boxShadow: '0 4px 6px rgba(14, 165, 233, 0.2)' }}>
+            Save New QR
           </button>
-        </div>
-      </div>
 
+        </div>
+
+        {/* ========================================= */}
+        {/* 2. SYSTEM CONFIGURATION CARD (RIGHT SIDE) */}
+        {/* ========================================= */}
+        <div style={{ flex: '1.5', minWidth: '400px', backgroundColor: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '32px 24px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)' }}>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
+            <SettingsIcon size={20} color="#0ea5e9" />
+            <h2 style={{ fontSize: '16px', fontWeight: '700', color: '#0f172a', margin: 0 }}>System Configuration</h2>
+          </div>
+
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ fontSize: '14px', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>Default Plans & Pricing</div>
+            <div style={{ fontSize: '12px', color: '#64748b' }}>Configure the rental cycle duration and price available to customers.</div>
+          </div>
+
+          {/* STANDARD PLAN EDIT ROW */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '16px', flexWrap: 'wrap', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <Calendar size={18} color="#64748b" />
+              <span style={{ fontWeight: '600', color: '#334155', fontSize: '14px' }}>Standard Plan</span>
+            </div>
+            
+            {/* Days & Price Inputs */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <input type="number" value={standardDays} onChange={(e) => setStandardDays(e.target.value)} style={{ width: '60px', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', textAlign: 'center', outline: 'none', fontSize: '14px', fontWeight: '600', color: '#0f172a' }} />
+                <span style={{ fontSize: '13px', color: '#64748b', fontWeight: '500' }}>Days</span>
+              </div>
+              <div style={{ width: '1px', height: '24px', backgroundColor: '#cbd5e1' }}></div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '14px', color: '#64748b', fontWeight: '600' }}>₹</span>
+                <input type="number" value={standardPrice} onChange={(e) => setStandardPrice(e.target.value)} style={{ width: '80px', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', textAlign: 'center', outline: 'none', fontSize: '14px', fontWeight: '600', color: '#0f172a' }} />
+              </div>
+            </div>
+          </div>
+
+          {/* DOUBLE PLAN EDIT ROW */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <Calendar size={18} color="#64748b" />
+              <span style={{ fontWeight: '600', color: '#334155', fontSize: '14px' }}>Double Plan</span>
+            </div>
+            
+            {/* Days & Price Inputs */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <input type="number" value={premiumDays} onChange={(e) => setPremiumDays(e.target.value)} style={{ width: '60px', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', textAlign: 'center', outline: 'none', fontSize: '14px', fontWeight: '600', color: '#0f172a' }} />
+                <span style={{ fontSize: '13px', color: '#64748b', fontWeight: '500' }}>Days</span>
+              </div>
+              <div style={{ width: '1px', height: '24px', backgroundColor: '#cbd5e1' }}></div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '14px', color: '#64748b', fontWeight: '600' }}>₹</span>
+                <input type="number" value={premiumPrice} onChange={(e) => setPremiumPrice(e.target.value)} style={{ width: '80px', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', textAlign: 'center', outline: 'none', fontSize: '14px', fontWeight: '600', color: '#0f172a' }} />
+              </div>
+            </div>
+          </div>
+
+          {/* CURRENCY SETTINGS */}
+          <div style={{ marginBottom: '32px' }}>
+            <div style={{ fontSize: '13px', fontWeight: '700', color: '#334155', marginBottom: '8px' }}>Currency Settings</div>
+            <div style={{ position: 'relative' }}>
+              <select style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #e2e8f0', appearance: 'none', outline: 'none', fontSize: '14px', color: '#0f172a', fontWeight: '500', backgroundColor: '#f8fafc', cursor: 'pointer' }}>
+                <option value="INR">INR (₹) - Indian Rupee</option>
+              </select>
+              <ChevronDown size={18} color="#64748b" style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+            </div>
+          </div>
+
+          {/* ACTION BUTTON */}
+          <button style={{ width: '100%', padding: '14px', borderRadius: '8px', border: 'none', backgroundColor: '#0ea5e9', color: '#fff', fontWeight: '700', cursor: 'pointer', fontSize: '14px', boxShadow: '0 4px 6px rgba(14, 165, 233, 0.2)' }}>
+            Update Parameters
+          </button>
+
+        </div>
+
+      </div>
     </div>
   );
 };

@@ -1,4 +1,5 @@
 {
+<<<<<<< Updated upstream
   "name": "rent8-adminpannel",
   "private": true,
   "version": "0.0.0",
@@ -8,6 +9,16 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
+=======
+  "name": "main",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+>>>>>>> Stashed changes
   },
   "dependencies": {
     "react": "^19.2.5",

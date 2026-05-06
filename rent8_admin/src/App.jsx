@@ -5,6 +5,11 @@ import Topbar from './components/Topbar';
 import Dashboard from './pages/Dashboard';
 import Users from './pages/Users';
 import Settings from './pages/Settings';
+import PendingApprovals from './pages/PendingApprovals';
+import ActiveProperties from './pages/ActiveProperties'; 
+import Reports from './pages/Reports'; 
+import Support from './pages/Support'; // 🚀 Naya Support Import
+
 import './App.css';
 
 function App() {
@@ -19,6 +24,12 @@ function App() {
               <Route path="/" element={<Dashboard />} />
               <Route path="/users" element={<Users />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/inventory" element={<ActiveProperties />} />
+              <Route path="/pending-approvals" element={<PendingApprovals />} /> 
+              <Route path="/reports" element={<Reports />} /> 
+              
+              {/* 🚀 Naya Support Route */}
+              <Route path="/support" element={<Support />} /> 
             </Routes>
           </div>
         </div>
