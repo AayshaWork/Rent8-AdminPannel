@@ -7,7 +7,7 @@ const {
   getAllProperties,
 } = require("../controllers/propertyController");
 
-// 🔥 final working (no role headache for now)
+// final working (no role headache for now)
 router.post("/create", auth(), createProperty);
 router.get("/all", auth(), getAllProperties);
 

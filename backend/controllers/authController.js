@@ -6,38 +6,8 @@ const {
   generateRefreshToken,
 } = require("../utils/generateToken");
 const User = require("../models/User");
-// REGISTER (USER)
 
-// REGISTER (USER)
-// exports.register = async (req, res) => {
-//   try {
-//     const { name, email, password } = req.body;
 
-//     const existing = await User.findOne({ email });
-//     if (existing) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Email already exists",
-//       });
-//     }
-
-//     // ✅ FIXED: Pass the plain password. 
-//     // Your Mongoose pre('save') hook will handle the hashing automatically.
-//     const user = await User.create({
-//       name,
-//       email,
-//       password, 
-//       role: "user",
-//     });
-
-//     res.json({
-//       success: true,
-//       message: "User registered successfully",
-//     });
-//   } catch (err) {
-//     res.status(500).json({ success: false, message: err.message });
-//   }
-// };
 exports.register = async (req, res) => {
   try {
     // Frontend se hum adminSecret bhi receive karenge (optional)
@@ -88,7 +58,7 @@ exports.login = async (req, res) => {
       });
     }
 
-    // ✅ FIXED: Using the helper method you defined in your User schema
+    // FIXED: Using the helper method you defined in your User schema
     const isMatch = await user.comparePassword(password);
 
     if (!isMatch) {
@@ -154,7 +124,7 @@ exports.logout = async (req, res) => {
 };
 
 exports.sendOtp = async (req, res) => {
-  console.log("hello"); // ✅ fixed
+  // console.log("hello"); 
 
   try {
     const { phone } = req.body;
@@ -202,7 +172,7 @@ exports.verifyOtp = async (req, res) => {
       });
     }
 
-    // ✅ Type-safe comparison to prevent Number vs String bugs
+    // Type-safe comparison to prevent Number vs String bugs
     if (String(user.otp) !== String(otp) || user.otpExpiry < new Date()) {
       return res.status(400).json({
         success: false,
@@ -239,7 +209,7 @@ exports.verifyOtp = async (req, res) => {
 };
 
 
-// 👤 1. GET MY PROFILE (Koi bhi logged-in user apna profile dekh sakta hai)
+//  1. GET MY PROFILE (Koi bhi logged-in user apna profile dekh sakta hai)
 exports.getMyProfile = async (req, res) => {
   try {
     // req.user.id hume hamare 'auth' middleware se mil raha hai!

@@ -1,11 +1,4 @@
-// import axios from "axios";
 
-// const API = axios.create({
-//   // ✅ Piche se '/api' hata diya, sirf port tak rakha hai
-//   baseURL: "http://localhost:5000/admin", 
-// });
-
-// export default API;
 
 
 
@@ -30,3 +23,19 @@ API.interceptors.request.use((req) => {
 });
 
 export default API;
+
+// import axios from 'axios';
+
+// const API = axios.create({
+//   baseURL: 'http://localhost:5000/api', // Aapka backend URL
+// });
+
+// // Har request ke sath LocalStorage se token nikal kar bhejega
+// API.interceptors.request.use((req) => {
+//   if (localStorage.getItem('adminToken')) { // Jo naam aapne token ka rakha hai
+//     req.headers.Authorization = `Bearer ${localStorage.getItem('adminToken')}`;
+//   }
+//   return req;
+// });
+
+// export default API;

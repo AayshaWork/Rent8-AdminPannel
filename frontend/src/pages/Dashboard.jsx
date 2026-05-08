@@ -8,12 +8,12 @@ import BroadcastBox from "../dashboard/BroadcastBox";
 import API from "../services/api";
 
 const Dashboard = () => {
-  // 1. State for Dynamic Stats (Shuru mein 0 ya loading dikhayenge)
+  // 1. State for Dynamic Stats (Initial Fallback Data)
   const [stats, setStats] = useState([
-    { title: "Revenue", value: "₹0", badge: "0%" },
+    { title: "Total Users", value: "0", badge: "0 Today" },
     { title: "Active Ads", value: "0" },
-    { title: "Pending", value: "0" },
-    { title: "Reports", value: "0" },
+    { title: "Pending Approvals", value: "0" },
+    { title: "Revenue", value: "₹0", badge: "0%" },
   ]);
 
   // 2. Fetch Data from Backend
@@ -23,18 +23,32 @@ const Dashboard = () => {
 
   const fetchDashboardData = async () => {
     try {
-      // ⚠️ Note: Yeh route apne backend ke hisaab se change karein
-      const res = await API.get("/admin/dashboard-stats"); 
+      // ✅ Exact wahi API hit kar rahe hain jo backend me banayi thi
+      const res = await API.get("/dashboard-stats"); 
       
       if (res.data.success) {
-        const { revenue, activeAds, pending, reports } = res.data.data;
+        const { users, properties } = res.data.data;
         
-        // State update karke naya data set karein
+        // Backend se aaye asali data ko map kar rahe hain
         setStats([
-          { title: "Revenue", value: `₹${revenue.toLocaleString('en-IN')}`, badge: "+12%" }, // Badge logic baad me dynamic kar sakte hain
-          { title: "Active Ads", value: activeAds.toString() },
-          { title: "Pending", value: pending.toString() },
-          { title: "Reports", value: reports.toString() },
+          { 
+            title: "Total Users", 
+            value: users.total.toLocaleString('en-IN'), 
+            badge: `+${users.joinedToday} Today` // Aaj kitne users join hue
+          },
+          { 
+            title: "Active Ads", 
+            value: properties.live.toLocaleString('en-IN') 
+          },
+          { 
+            title: "Pending Approvals", 
+            value: properties.pending.toLocaleString('en-IN') 
+          },
+          { 
+            title: "Revenue", 
+            value: "₹0", // TODO: Jab Payments module banayenge tab isko real karenge
+            badge: "0%" 
+          },
         ]);
       }
     } catch (err) {
@@ -43,8 +57,14 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen p-8 space-y-6 font-sans bg-slate-50">
       
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="mb-2 text-3xl font-extrabold tracking-tight text-slate-900">Overview</h1>
+        <p className="m-0 text-[15px] text-slate-500">Monitor real-time platform growth, revenue, and pending tasks.</p>
+      </div>
+
       {/* Stats Cards */}
       <div className="grid grid-cols-4 gap-6">
         {stats.map((item, i) => (

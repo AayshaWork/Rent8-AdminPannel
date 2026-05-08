@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 
-// 🛡️ GUARD 1: Check if user is logged in
+// GUARD 1: Check if user is logged in
 const auth = (req, res, next) => {
   try {
     const header = req.headers.authorization;
@@ -27,7 +27,7 @@ const auth = (req, res, next) => {
   }
 };
 
-// 🛡️ GUARD 2: Check if user is Admin
+// GUARD 2: Check if user is Admin
 const isAdmin = (req, res, next) => {
   // Yeh humesha `auth` ke baad chalega, isliye req.user already check ho chuka hoga
   if (!req.user || (req.user.role !== "admin" && req.user.role !== "owner")) {
@@ -40,5 +40,5 @@ const isAdmin = (req, res, next) => {
   next();
 };
 
-// ⚠️ DHYAN DEIN: Ab hume dono function export karne hain
+
 module.exports = { auth, isAdmin };

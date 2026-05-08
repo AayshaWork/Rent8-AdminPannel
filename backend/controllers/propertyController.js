@@ -1,56 +1,35 @@
 const Property = require("../models/Property");
 
+// CREATE PROPERTY (Normal User ke liye - app/website se ad daalne ke liye)
 exports.createProperty = async (req, res) => {
   try {
+    // Jab user ad daalega, uska default status schema se apne aap "pending" set ho jayega
     const property = await Property.create(req.body);
 
-    res.json({ message: "Property added", property });
+    res.json({ 
+      success: true, 
+      message: "Property submitted for review", 
+      data: property 
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ success: false, message: err.message });
   }
 };
 
+// GET LIVE PROPERTIES (Public Feed - App/Website par dikhane ke liye)
+exports.getLiveProperties = async (req, res) => {
+  try {
+    // Normal users ko sirf wahi properties dikhengi jo Admin ne approve ("live") kar di hain
+    const properties = await Property.find({ status: "live" })
+      .populate("owner_id", "name phone") // Owner ka naam aur number dikhane ke liye
+      .sort({ createdAt: -1 });
 
-// GET ALL
-exports.getAllProperties = async (req, res) => {
-  const data = await Property.find().populate("owner_id");
-  res.json(data);
-};
-
-exports.getProperties = async (req, res) => {
-  const { status } = req.query;
-
-  const query = status ? { status } : {};
-
-  const properties = await Property.find(query);
-
-  res.json({
-    success: true,
-    data: properties,
-  });
-};
-
-exports.approveProperty = async (req, res) => {
-  await Property.findByIdAndUpdate(req.params.id, {
-    status: "approved",
-  });
-
-  res.json({
-    success: true,
-    message: "Property approved",
-  });
-};
-
-exports.rejectProperty = async (req, res) => {
-  const { reason } = req.body;
-
-  await Property.findByIdAndUpdate(req.params.id, {
-    status: "rejected",
-    rejectReason: reason,
-  });
-
-  res.json({
-    success: true,
-    message: "Property rejected",
-  });
+    res.json({
+      success: true,
+      count: properties.length,
+      data: properties,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
 };

@@ -4,30 +4,46 @@ const router = express.Router();
 const { 
   adminLogin, 
   getAllUsers, 
-  getDashboardStats 
+  getDashboardStats, 
+  toggleUserBlockStatus,
+  getProperties,
+  approveProperty,
+  rejectProperty,
+  updateSettings,
+  getSettings,
+  ignoreReport,
+  deleteReportedProperty,
+  getAllReports
 } = require("../controllers/adminController");
 
 const { auth, isAdmin } = require("../middleware/authMiddleware");
 
 
-// router.post("/login", adminLogin);
-
-// 2. Get All Users Route (Protected)
-// URL banega: GET /api/admin/users
+router.post("/login", adminLogin);
 router.get("/users", auth, isAdmin, getAllUsers);
 
-// 3. Dashboard Stats Route (Protected)
-// URL banega: GET /api/admin/dashboard-stats
+router.put("/users/:id/block", auth, isAdmin, toggleUserBlockStatus);
+
+router.get("/properties", auth, isAdmin, getProperties);
+router.put("/properties/:id/approve", auth, isAdmin, approveProperty);
+router.put("/properties/:id/reject", auth, isAdmin, rejectProperty);
 router.get("/dashboard-stats", auth, isAdmin, getDashboardStats);
 
-// console.log("--- DEBUGGING IMPORTS ---");
-// console.log("auth is:", typeof auth);
-// console.log("isAdmin is:", typeof isAdmin);
-// console.log("adminLogin is:", typeof adminLogin);
-// console.log("getAllUsers is:", typeof getAllUsers);
-// console.log("getDashboardStats is:", typeof getDashboardStats);
-// console.log("-------------------------");
 
-// 1. Admin Login Route
-router.post("/admin/login", adminLogin);
+// 5. Settings Routes (Protected)
+// URL: GET /api/admin/settings
+router.get("/settings", auth, isAdmin, getSettings);
+
+// URL: PUT /api/admin/settings
+router.put("/settings", auth, isAdmin, updateSettings);
+// Reports dekhne ke liye
+router.get("/reports", auth, isAdmin, getAllReports);
+
+// Property delete karne ke liye (Action from Report)
+router.delete("/reports/delete-property/:propertyId/:reportId", auth, isAdmin, deleteReportedProperty);
+
+// Report ignore karne ke liye
+router.put("/reports/ignore/:id", auth, isAdmin, ignoreReport);
+
+
 module.exports = router;

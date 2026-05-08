@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Filter, Download, MoreVertical, AlertTriangle, Shield, Ban, Eye } from 'lucide-react';
+import { Filter, Download, MoreVertical, AlertTriangle, Shield, Ban, Eye, X, Mail, Phone, Calendar, Star } from 'lucide-react'; // ✅ Naye Icons add kiye
 import API from '../services/api';
-
 
 const Users = () => {
   // 🚀 STATES
-  const [users, setUsers] = useState([]); // ✅ Dummy data hata kar empty array rakha
-  const [loading, setLoading] = useState(true); // ✅ Loading state add ki
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState('All');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [activeDropdown, setActiveDropdown] = useState(null); 
+  const [selectedUser, setSelectedUser] = useState(null); // ✅ View Profile popup ke liye naya state
   const itemsPerPage = 5;
 
   // 🚀 FETCH USERS FROM BACKEND
@@ -21,21 +21,22 @@ const Users = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      // ✅ Backend ki exact API hit kar rahe hain
-      const res = await API.get('/api/admin/users');
+      const res = await API.get('/users'); // Aapka working route
       
       if (res.data.success) {
-        // Backend se aane wale data ko map karke apne UI ke hisaab se format kar rahe hain
+        // ✅ Email, Role aur isPremium ko bhi map kar liya hai
         const formattedUsers = res.data.data.map((user) => ({
           id: user._id, 
           name: user.name || "Unknown User",
-          mobile: user.mobile || user.phone || "N/A", // Agar aapke DB me phone hai toh phone likhein
-          status: user.status ? user.status.toUpperCase() : "ACTIVE", // Agar status nahi hai toh default ACTIVE
+          mobile: user.mobile || user.phone || "N/A", 
+          email: user.email || "N/A", 
+          role: user.role || "user", 
+          isPremium: user.isPremium || false, 
+          status: user.status ? user.status.toUpperCase() : "ACTIVE", 
           joinDate: new Date(user.createdAt).toLocaleDateString('en-IN', {
             day: '2-digit', month: 'short', year: 'numeric'
           }),
-          // Naam ke hisaab se automatic avatar generate karna
-          avatar: `https://ui-avatars.com/api/?name=${user.name || 'User'}&background=random`
+          avatar: `https://ui-avatars.com/api/?name=${user.name || 'User'}&background=e2e8f0&color=475569`
         }));
 
         setUsers(formattedUsers);
@@ -48,24 +49,28 @@ const Users = () => {
     }
   };
 
-  // 🚀 BLOCK / UNBLOCK LOGIC (Abhi ke liye sirf UI me change karega, next hum iski API banayenge)
+  // 🚀 BLOCK / UNBLOCK LOGIC (Real API Call)
   const toggleBlockStatus = async (userId) => {
-    // UI update kar rahe hain
-    setUsers(users.map(user => {
-      if (user.id === userId) {
-        return { ...user, status: user.status === 'ACTIVE' ? 'BLOCKED' : 'ACTIVE' };
+    try {
+      const res = await API.put(`/users/${userId}/block`); // Aapka working route
+      
+      if (res.data.success) {
+        setUsers(users.map(user => {
+          if (user.id === userId) {
+            return { ...user, status: res.data.data.status }; 
+          }
+          return user;
+        }));
+        
+        alert(res.data.message); 
       }
-      return user;
-    }));
-    setActiveDropdown(null); 
-
-    // TODO: Next step me yahan API hit karenge: await API.put(`/api/admin/users/${userId}/block`)
+    } catch (error) {
+      console.error("Error toggling block status:", error);
+      alert(error.response?.data?.message || "Failed to change user status");
+    } finally {
+      setActiveDropdown(null); 
+    }
   };
-
-  // 🚀 DUMMY URGENT REPORTS (Inko baad me real karenge)
-  const urgentReports = [
-    { id: 1, reporter: 'Rohan Joshi (#3312)', issueTitle: 'Suspected rental scam for Baner apartment', issueDesc: 'User requested advance deposit via UPI before showing the property. Photos seem fake.', reportedUser: 'Vikram Singh', reportedUserSince: 'Member since 2 days ago' },
-  ];
 
   // 🚀 FILTER LOGIC
   const filteredUsers = users.filter(user => {
@@ -78,7 +83,7 @@ const Users = () => {
   const isFilterActive = filterStatus !== 'All';
 
   return (
-    <div className="min-h-screen p-8 font-sans bg-slate-50">
+    <div className="relative min-h-screen p-8 font-sans bg-slate-50">
       
       {/* HEADER */}
       <div className="mb-8">
@@ -96,7 +101,6 @@ const Users = () => {
       {/* TABLE CONTROLS */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
         <div className="flex items-center gap-3">
-          {/* FILTER BUTTON & DROPDOWN */}
           <div className="relative">
             <button 
               onClick={() => setIsFilterOpen(!isFilterOpen)}
@@ -179,7 +183,15 @@ const Users = () => {
 
                   {activeDropdown === user.id && (
                     <div className="absolute z-20 flex flex-col w-40 gap-1 p-2 bg-white border rounded-lg shadow-lg right-10 top-10 border-slate-200">
-                      <button className="flex w-full cursor-pointer items-center gap-2 rounded-md bg-transparent px-3 py-2.5 text-left text-[13px] font-medium text-slate-600 hover:bg-slate-50">
+                      
+                      {/* ✅ View Profile Button */}
+                      <button 
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setActiveDropdown(null);
+                        }}
+                        className="flex w-full cursor-pointer items-center gap-2 rounded-md bg-transparent px-3 py-2.5 text-left text-[13px] font-medium text-slate-600 hover:bg-slate-50"
+                      >
                         <Eye size={16} /> View Profile
                       </button>
                       
@@ -203,6 +215,84 @@ const Users = () => {
           </tbody>
         </table>
       </div>
+
+      {/* ========================================= */}
+      {/* 🟢 VIEW PROFILE MODAL */}
+      {/* ========================================= */}
+      {selectedUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          <div className="w-full max-w-md overflow-hidden bg-white shadow-2xl rounded-2xl">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+              <h3 className="text-lg font-bold text-slate-900">User Profile</h3>
+              <button 
+                onClick={() => setSelectedUser(null)}
+                className="p-1 transition-colors rounded-full cursor-pointer text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6">
+              
+              {/* Profile Image & Name */}
+              <div className="flex flex-col items-center mb-6">
+                <div className="relative">
+                  <img src={selectedUser.avatar} alt="Profile" className="object-cover w-24 h-24 mb-3 border-4 rounded-full border-slate-50" />
+                  {selectedUser.isPremium && (
+                    <div className="absolute bottom-3 right-0 p-1.5 bg-yellow-400 rounded-full text-white border-2 border-white" title="Premium User">
+                      <Star size={12} className="fill-current" />
+                    </div>
+                  )}
+                </div>
+                <h2 className="text-xl font-extrabold text-slate-900">{selectedUser.name}</h2>
+                <div className="text-sm font-medium text-slate-500">ID: {selectedUser.id}</div>
+                
+                <div className="flex gap-2 mt-3">
+                  <span className="px-2.5 py-1 rounded-md bg-slate-100 text-slate-600 text-[11px] font-bold uppercase tracking-wider">
+                    {selectedUser.role}
+                  </span>
+                  <span className={`px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider ${
+                    selectedUser.status === 'ACTIVE' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                  }`}>
+                    {selectedUser.status}
+                  </span>
+                </div>
+              </div>
+
+              {/* Contact Details */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50">
+                  <Phone size={18} className="text-slate-400" />
+                  <div>
+                    <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Phone Number</div>
+                    <div className="text-sm font-semibold text-slate-700">{selectedUser.mobile}</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50">
+                  <Mail size={18} className="text-slate-400" />
+                  <div>
+                    <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Email Address</div>
+                    <div className="text-sm font-semibold text-slate-700">{selectedUser.email}</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50">
+                  <Calendar size={18} className="text-slate-400" />
+                  <div>
+                    <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Joined On</div>
+                    <div className="text-sm font-semibold text-slate-700">{selectedUser.joinDate}</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

@@ -35,6 +35,14 @@ const userSchema = new mongoose.Schema(
       default: "user",
     },
 
+
+    status: {
+      type: String,
+      enum: ["ACTIVE", "BLOCKED"],
+      default: "ACTIVE",
+    },
+
+
     isPremium: {
       type: Boolean,
       default: false,
@@ -42,13 +50,13 @@ const userSchema = new mongoose.Schema(
 
     fcm_token: String,
 
-    // 🔐 AUTH SYSTEM
+
     refreshToken: {
       type: String,
       default: null,
     },
 
-    // 📱 OTP SYSTEM
+  
     otp: {
       type: String,
     },
@@ -70,7 +78,7 @@ userSchema.pre("save", async function () {
   this.password = await bcrypt.hash(this.password, 10);
 });
 
-// 🔑 COMPARE PASSWORD (helper function)
+// COMPARE PASSWORD (helper function)
 userSchema.methods.comparePassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
