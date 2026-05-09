@@ -181,7 +181,6 @@ exports.verifyOtp = async (req, res) => {
     // 3. 🚀 Naye user ke liye Default Name aur Unique ID generate karna
     let isNewUser = false;
     
-    // Agar user ka naam pehle se nahi hai, matlab wo naya hai
     if (!user.name || user.name.trim() === "") {
       isNewUser = true;
       user.name = "R8User"; // Default naam
@@ -194,12 +193,14 @@ exports.verifyOtp = async (req, res) => {
     // 4. Generate Tokens
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
+    
+    // Refresh token DB me save kar lo taaki baad me verify kar sako
     user.refreshToken = refreshToken;
 
     // Save all changes (Name, Unique ID, Tokens) to Database
     await user.save();
 
-    // 5. 🚀 EXACT WAHI FORMAT JO DEVELOPER NE MANGA HAI
+    // 5. 🚀 INDUSTRY STANDARD FORMAT (Flutter wale ko yahi chahiye)
     res.json({
       status: "success",
       message: "Login Successful",
@@ -209,7 +210,8 @@ exports.verifyOtp = async (req, res) => {
         is_new_user: isNewUser,
         name: user.name,
         unique_r8_id: user.unique_r8_id,
-        auth_token: accessToken 
+        auth_token: accessToken,       // Flutter me har API call me jayega
+        refresh_token: refreshToken    // Background me naya auth_token laane ke kaam aayega
       }
     });
 
