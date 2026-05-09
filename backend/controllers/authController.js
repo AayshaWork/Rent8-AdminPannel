@@ -159,64 +159,62 @@ exports.sendOtp = async (req, res) => {
   }
 };
 
+// VERIFY OTP (APP USER LOGIN)
 exports.verifyOtp = async (req, res) => {
   try {
     const { phone, otp } = req.body;
-
     const user = await User.findOne({ phone });
 
-    if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: "User not found",
+    // 1. OTP Validation
+    if (!user || String(user.otp) !== String(otp) || user.otpExpiry < new Date()) {
+      return res.status(400).json({ 
+        status: "error", 
+        message: "Invalid or expired OTP" 
       });
     }
 
-    // Type-safe comparison to prevent Number vs String bugs
-    if (String(user.otp) !== String(otp) || user.otpExpiry < new Date()) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid or expired OTP",
-      });
-    }
-
-    // Clear OTP after successful use
+    // 2. Clear OTP after successful verify
     user.otp = null;
     user.otpExpiry = null;
+    if (!user.role) user.role = "user";
 
-    // Ensure role exists safely
-    if (!user.role) {
-        user.role = "user";
+    // 3. 🚀 Naye user ke liye Default Name aur Unique ID generate karna
+    let isNewUser = false;
+    
+    // Agar user ka naam pehle se nahi hai, matlab wo naya hai
+    if (!user.name || user.name.trim() === "") {
+      isNewUser = true;
+      user.name = "R8User"; // Default naam
+      
+      // Unique ID generate kar rahe hain (e.g., R8User789-R8)
+      const randomNum = Math.floor(100 + Math.random() * 900); 
+      user.unique_r8_id = `R8User${randomNum}-R8`;
     }
 
-// (Upar ka tera code same rahega...)
-
+    // 4. Generate Tokens
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
-
     user.refreshToken = refreshToken;
+
+    // Save all changes (Name, Unique ID, Tokens) to Database
     await user.save();
 
-    // Check if name is missing to determine if it's a new user
-    const isNewUser = user.name ? false : true;
-
+    // 5. 🚀 EXACT WAHI FORMAT JO DEVELOPER NE MANGA HAI
     res.json({
-      success: true,
+      status: "success",
+      message: "Login Successful",
       data: {
-        id: user._id,         
-        name: user.name,     
-        email: user.email,   
-        phone: user.phone,             
-        profile_pic: user.profile_pic, 
-        isPremium: user.isPremium,     
-        accessToken,
-        refreshToken,
-        role: user.role,
-        is_new_user: isNewUser,        
-      },
+        user_id: user._id,
+        mobile: user.phone,
+        is_new_user: isNewUser,
+        name: user.name,
+        unique_r8_id: user.unique_r8_id,
+        auth_token: accessToken 
+      }
     });
+
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    res.status(500).json({ status: "error", message: err.message });
   }
 };
 

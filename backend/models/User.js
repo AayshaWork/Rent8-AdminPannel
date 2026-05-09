@@ -55,7 +55,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
-
+unique_r8_id: {
+    type: String,
+    unique: true,
+    sparse: true 
+  },
   
     otp: {
       type: String,
