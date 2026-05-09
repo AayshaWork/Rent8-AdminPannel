@@ -189,18 +189,30 @@ exports.verifyOtp = async (req, res) => {
         user.role = "user";
     }
 
+// (Upar ka tera code same rahega...)
+
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
     user.refreshToken = refreshToken;
     await user.save();
 
+    // Check if name is missing to determine if it's a new user
+    const isNewUser = user.name ? false : true;
+
     res.json({
       success: true,
       data: {
+        id: user._id,         
+        name: user.name,     
+        email: user.email,   
+        phone: user.phone,             
+        profile_pic: user.profile_pic, 
+        isPremium: user.isPremium,     
         accessToken,
         refreshToken,
         role: user.role,
+        is_new_user: isNewUser,        
       },
     });
   } catch (err) {

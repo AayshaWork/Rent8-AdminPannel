@@ -8,6 +8,49 @@ const Property = require("../models/Property");
 const Settings = require("../models/Settings");
 const Report = require("../models/Report");
 
+// // LOGIN (ADMIN)
+// exports.adminLogin = async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+
+//     const user = await User.findOne({ email });
+
+//     //  SECURITY: Only allow users with 'admin' or 'owner' roles
+//     if (!user || (user.role !== "admin" && user.role !== "owner")) {
+//       return res.status(403).json({
+//         success: false,
+//         message: "Access denied. Authorized personnel only.",
+//       });
+//     }
+
+//     const isMatch = await user.comparePassword(password);
+
+//     if (!isMatch) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Invalid credentials",
+//       });
+//     }
+
+//     const accessToken = generateAccessToken(user);
+//     const refreshToken = generateRefreshToken(user);
+
+//     user.refreshToken = refreshToken;
+//     await user.save();
+
+//     res.json({
+//       success: true,
+//       message: "Admin login successful",
+//       data: {
+//         accessToken,
+//         refreshToken,
+//         role: user.role,
+//       },
+//     });
+//   } catch (err) {
+//     res.status(500).json({ success: false, message: err.message });
+//   }
+// };
 // LOGIN (ADMIN)
 exports.adminLogin = async (req, res) => {
   try {
@@ -15,7 +58,7 @@ exports.adminLogin = async (req, res) => {
 
     const user = await User.findOne({ email });
 
-    //  SECURITY: Only allow users with 'admin' or 'owner' roles
+    // SECURITY: Only allow users with 'admin' or 'owner' roles
     if (!user || (user.role !== "admin" && user.role !== "owner")) {
       return res.status(403).json({
         success: false,
@@ -38,20 +81,24 @@ exports.adminLogin = async (req, res) => {
     user.refreshToken = refreshToken;
     await user.save();
 
+    // 🚀 EXACT AAPKA WALA FORMAT
     res.json({
       success: true,
-      message: "Admin login successful",
-      data: {
-        accessToken,
-        refreshToken,
-        role: user.role,
+      tokens: {
+        accessToken: accessToken,
+        refreshToken: refreshToken
       },
+      user: {
+        id: user._id,
+        role: user.role.toUpperCase(), // "ADMIN" ya "OWNER"
+        name: user.name,
+        email: user.email
+      }
     });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 };
-
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.find().select("-password"); // Password hide kar diya
