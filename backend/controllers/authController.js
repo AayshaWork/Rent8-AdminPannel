@@ -203,58 +203,130 @@ exports.sendOtp = async (req, res) => {
 };
 
 // VERIFY OTP (APP USER LOGIN)
+// exports.verifyOtp = async (req, res) => {
+//   try {
+//     const { phone, otp } = req.body;
+//     const user = await User.findOne({ phone });
+
+//     // 1. OTP Validation
+//     if (!user || String(user.otp) !== String(otp) || user.otpExpiry < new Date()) {
+//       return res.status(400).json({ 
+//         status: "error", 
+//         message: "Invalid or expired OTP" 
+//       });
+//     }
+
+//     // 2. Clear OTP after successful verify
+//     user.otp = null;
+//     user.otpExpiry = null;
+//     if (!user.role) user.role = "user";
+
+//     // 3. 🚀 Naye user ke liye Default Name aur Unique ID generate karna
+//     let isNewUser = false;
+    
+//     if (!user.name || user.name.trim() === "") {
+//       isNewUser = true;
+//       user.name = "R8User"; // Default naam
+      
+//       // Unique ID generate kar rahe hain (e.g., R8User789-R8)
+//       const randomNum = Math.floor(100 + Math.random() * 900); 
+//       user.unique_r8_id = `R8User${randomNum}-R8`;
+//     }
+
+//     // 4. Generate Tokens
+//     const accessToken = generateAccessToken(user);
+//     const refreshToken = generateRefreshToken(user);
+    
+//     // Refresh token DB me save kar lo taaki baad me verify kar sako
+//     user.refreshToken = refreshToken;
+
+//     // Save all changes (Name, Unique ID, Tokens) to Database
+//     await user.save();
+
+//     // 5. 🚀 INDUSTRY STANDARD FORMAT (Flutter wale ko yahi chahiye)
+//     res.json({
+//       status: "success",
+//       message: "Login Successful",
+//       data: {
+//         user_id: user._id,
+//         mobile: user.phone,
+//         is_new_user: isNewUser,
+//         name: user.name,
+//         unique_r8_id: user.unique_r8_id,
+//         auth_token: accessToken,       // Flutter me har API call me jayega
+//         refresh_token: refreshToken    // Background me naya auth_token laane ke kaam aayega
+//       }
+//     });
+
+//   } catch (err) {
+//     res.status(500).json({ status: "error", message: err.message });
+//   }
+// };
+// VERIFY OTP (APP USER LOGIN)
 exports.verifyOtp = async (req, res) => {
   try {
     const { phone, otp } = req.body;
     const user = await User.findOne({ phone });
 
-    // 1. OTP Validation
-    if (!user || String(user.otp) !== String(otp) || user.otpExpiry < new Date()) {
+    // 1. OTP Validation (Frontend Dev ka Testing Bypass)
+    const isMasterOtp = (otp === "1234"); // Testing ke liye hamesha pass karega
+    const isRealOtpValid = (user && String(user.otp) === String(otp) && user.otpExpiry > new Date());
+
+    if (!isMasterOtp && !isRealOtpValid) {
       return res.status(400).json({ 
         status: "error", 
         message: "Invalid or expired OTP" 
       });
     }
 
-    // 2. Clear OTP after successful verify
-    user.otp = null;
-    user.otpExpiry = null;
-    if (!user.role) user.role = "user";
+    // 2. Clear OTP after successful verify (Agar real OTP use hua hai tabhi clear karo)
+    if (!isMasterOtp && user) {
+      user.otp = null;
+      user.otpExpiry = null;
+    }
+    
+    // Agar existing user nahi tha, ya first time bypass use ho raha hai, toh naya user bana lo
+    let currentUser = user;
+    if (!currentUser) {
+       currentUser = new User({ phone: phone, role: "user" });
+    }
+
+    if (!currentUser.role) currentUser.role = "user";
 
     // 3. 🚀 Naye user ke liye Default Name aur Unique ID generate karna
     let isNewUser = false;
     
-    if (!user.name || user.name.trim() === "") {
+    if (!currentUser.name || currentUser.name.trim() === "") {
       isNewUser = true;
-      user.name = "R8User"; // Default naam
+      currentUser.name = "R8User"; // Default naam
       
       // Unique ID generate kar rahe hain (e.g., R8User789-R8)
       const randomNum = Math.floor(100 + Math.random() * 900); 
-      user.unique_r8_id = `R8User${randomNum}-R8`;
+      currentUser.unique_r8_id = `R8User${randomNum}-R8`;
     }
 
     // 4. Generate Tokens
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
+    const accessToken = generateAccessToken(currentUser);
+    const refreshToken = generateRefreshToken(currentUser);
     
-    // Refresh token DB me save kar lo taaki baad me verify kar sako
-    user.refreshToken = refreshToken;
+    // Refresh token DB me save kar lo
+    currentUser.refreshToken = refreshToken;
 
-    // Save all changes (Name, Unique ID, Tokens) to Database
-    await user.save();
+    // Save all changes to Database
+    await currentUser.save();
 
-    // 5. 🚀 INDUSTRY STANDARD FORMAT (Flutter wale ko yahi chahiye)
+    // 5. 🚀 INDUSTRY STANDARD FORMAT
     res.json({
       status: "success",
       message: "Login Successful",
       data: {
-        user_id: user._id,
-        mobile: user.phone,
+        user_id: currentUser._id,
+        mobile: currentUser.phone,
         is_new_user: isNewUser,
-        name: user.name,
-        unique_r8_id: user.unique_r8_id,
-        auth_token: accessToken,       // Flutter me har API call me jayega
-        refresh_token: refreshToken    // Background me naya auth_token laane ke kaam aayega
+        name: currentUser.name,
+        unique_r8_id: currentUser.unique_r8_id,
+        auth_token: accessToken,       
+        refresh_token: refreshToken    
       }
     });
 
@@ -262,7 +334,6 @@ exports.verifyOtp = async (req, res) => {
     res.status(500).json({ status: "error", message: err.message });
   }
 };
-
 
 //  1. GET MY PROFILE (Koi bhi logged-in user apna profile dekh sakta hai)
 exports.getMyProfile = async (req, res) => {

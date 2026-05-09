@@ -26,13 +26,14 @@ app.get("/", (req, res) => {
 // 4. Route Imports
 const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const userRoutes = require("./routes/userRoutes")
 // const propertyRoutes = require("./routes/propertyRoutes");
 
 // 5. Mount Routes (Sabko /api ke andar daal diya)
 app.use("/api/auth", authRoutes);
 app.use("/api", adminRoutes); // ✅ Ab frontend isko /api/admin/login se call karega
 // app.use("/api/property", propertyRoutes);
-
+app.use("/api",userRoutes)
 // 6. Global Error Handler (Hamesha sabse last mein aayega)
 app.use((err, req, res, next) => {
   console.error(err.stack);
