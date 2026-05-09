@@ -108,18 +108,61 @@ exports.refreshToken = async (req, res) => {
   }
 };
 
+// REFRESH TOKEN (Flutter app background me call karegi)
+exports.refreshToken = async (req, res) => {
+  try {
+    // Flutter dev ko refresh_token (snake_case) bhejne ki aadat hai
+    const { refresh_token } = req.body;
 
+    if (!refresh_token) {
+      return res.status(401).json({ status: "error", message: "No refresh token provided" });
+    }
 
+    const user = await User.findOne({ refreshToken: refresh_token });
+    
+    if (!user) {
+      return res.status(403).json({ status: "error", message: "Invalid refresh token" });
+    }
+
+    // Verify token
+    jwt.verify(refresh_token, process.env.JWT_REFRESH_SECRET);
+
+    // Generate new Access Token
+    const newAccessToken = generateAccessToken(user);
+
+    // Flutter dev ke format me return karna
+    res.json({ 
+      status: "success",
+      message: "Token refreshed",
+      data: {
+        auth_token: newAccessToken 
+      }
+    });
+  } catch (err) {
+    res.status(403).json({ status: "error", message: "Token expired or invalid. Please login again." });
+  }
+};
+
+// LOGOUT (User app se logout karega)
 exports.logout = async (req, res) => {
   try {
+    // req.user.id tere 'auth' middleware se aayega, matlab token pass karna padega header me
     const user = await User.findById(req.user.id);
 
+    if (!user) {
+      return res.status(404).json({ status: "error", message: "User not found" });
+    }
+
+    // Database se refresh token uda do
     user.refreshToken = null;
     await user.save();
 
-    res.json({ msg: "Logged out" });
+    res.json({ 
+      status: "success", 
+      message: "Logged out successfully" 
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ status: "error", message: err.message });
   }
 };
 
