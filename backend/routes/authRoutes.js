@@ -8,12 +8,13 @@ const {
   verifyOtp,
   logout,
 } = require("../controllers/authController");
+const { auth } = require("../middleware/authMiddleware");
 
 
 
 router.post("/register", register);
 router.post("/login", login);
-router.post("/logout", logout)
+router.post("/logout", auth, logout)
 router.post("/send-otp", sendOtp);
 router.post("/verify-otp",verifyOtp);
 
