@@ -1,73 +1,8 @@
-// const mongoose = require("mongoose");
-
-// const propertySchema = new mongoose.Schema(
-//   {
-//     title: { 
-//       type: String, 
-//       required: true,
-//       trim: true 
-//     },
-//     facilities: [String],
-//     rent: { 
-//       type: Number, 
-//       required: true 
-//     },
-//     deposit: { 
-//       type: Number, 
-//       required: true 
-//     },
-//     full_address: { 
-//       type: String, 
-//       required: true 
-//     },
-    
-//     location: {
-//       type: {
-//         type: String,
-//         enum: ['Point'], 
-//         default: 'Point'
-//       },
-//       coordinates: {
-//         type: [Number], // format: [longitude, latitude]
-//         required: true
-//       }
-//     },
-
-//     brokerage: { 
-//       type: Boolean, 
-//       default: false 
-//     },
-//     images: [String],
-//     owner_id: {
-//       type: mongoose.Schema.Types.ObjectId,
-//       ref: "User",
-//       required: true
-//     },
-//     status: {
-//       type: String,
-//       enum: ["pending", "live", "rejected"],
-//       default: "pending"
-//     }, 
-//     rejectReason: { 
-//       type: String,
-//       default: null
-//     }
-//   },
-//   { timestamps: true } 
-// );
-
-// // Geo-spatial index for faster location queries
-// propertySchema.index({ location: "2dsphere" });
-
-// module.exports = mongoose.model("Property", propertySchema);
-
-
 const mongoose = require("mongoose");
 
 const propertySchema = new mongoose.Schema(
   {
     ad_id: { 
-     
       type: String,
       unique: true,
       required: true
@@ -102,32 +37,34 @@ const propertySchema = new mongoose.Schema(
       type: {
         type: String,
         enum: ['Point'], 
-        default: 'Point'
+       
       },
       coordinates: {
-        type: [Number], // format: [longitude, latitude]
-        required: false // (Abhi false rakha hai, incase Google Map URL se coordinates fetch na ho payein)
+        type: [Number], // [longitude, latitude]
+        required: false 
       }
     },
     brokerage: { 
-      type: Boolean, 
-      default: false 
+      type: String, // ⚠️ Update: Boolean ki jagah String ('Yes'/'No') kar diya tere form ke hisaab se
+      default: "No" 
     },
+    alternate_number: {
+    type: String, // String rakho taaki "+91" bhi save ho sake
+    default: null
+  },
     images: [String], 
     contact_preference: { 
-     
       type: String,
       enum: ["phone", "app_id", "both"],
       default: "both"
     },
     status: {
-     
       type: String,
-      enum: ["pending_approval", "live", "rejected", "deactivated", "expired"],
-      default: "pending_approval"
+      // 🚀 NAYA: "pending_payment" add kiya list mein aur default banaya
+      enum: ["pending_payment", "pending_approval", "live", "rejected", "deactivated", "expired"],
+      default: "pending_payment" 
     }, 
     reject_reason: { 
-    
       type: String,
       default: null
     }
@@ -135,7 +72,5 @@ const propertySchema = new mongoose.Schema(
   { timestamps: true } 
 );
 
-// Geo-spatial index for faster location queries
 propertySchema.index({ location: "2dsphere" });
-
 module.exports = mongoose.model("Property", propertySchema);

@@ -27,8 +27,10 @@ const userSchema = new mongoose.Schema(
       sparse: true, // important for OTP login users
     },
 
-    profile_pic: String,
-
+profile_image_url: { 
+    type: String, 
+    default: null // Shuru mein koi photo nahi hogi
+  },
     role: {
       type: String,
       enum: ["user", "admin", "owner"],

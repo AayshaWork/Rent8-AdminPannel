@@ -19,7 +19,7 @@ const handleLogin = async () => {
       setLoading(true);
 
       // ✅ Exact wahi URL path jo aapne mujhe diya hai
-      const res = await API.post("/login", form); 
+      const res = await API.post("/admin/login", form); 
 
       // Backend response se token aur role nikalna
       const { accessToken, role } = res.data.data;

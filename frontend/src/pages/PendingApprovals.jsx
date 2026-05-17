@@ -37,7 +37,7 @@ const PendingApprovals = () => {
     try {
       setLoading(true);
       // Backend route hit kar rahe hain jisme sirf 'pending' status wali properties aayengi
-      const res = await API.get('/api/admin/properties?status=pending');
+      const res = await API.get('/admin/properties?status=pending_approval');
       if (res.data.success) {
         setProperties(res.data.data);
       }
@@ -52,7 +52,7 @@ const PendingApprovals = () => {
   // 🚀 APPROVE PROPERTY API
   const handleApprove = async (id) => {
     try {
-      const res = await API.put(`/api/admin/properties/${id}/approve`);
+      const res = await API.put(`/admin/properties/${id}/approve`);
       if (res.data.success) {
         // UI se us property ko turant hata do kyunki ab wo 'live' ho gayi hai
         setProperties(properties.filter(p => p._id !== id));
@@ -67,7 +67,7 @@ const PendingApprovals = () => {
   // 🚀 REJECT PROPERTY API
   const handleReject = async (reasonObj) => {
     try {
-      const res = await API.put(`/api/admin/properties/${selectedProperty._id}/reject`, {
+      const res = await API.put(`/admin/properties/${selectedProperty._id}/reject`, {
         reason: reasonObj.reason || "Policy Violation"
       });
       if (res.data.success) {

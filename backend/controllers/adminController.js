@@ -8,14 +8,16 @@ const Property = require("../models/Property");
 const Settings = require("../models/Settings");
 const Report = require("../models/Report");
 
-// LOGIN (ADMIN)
+// ==========================================
+// 🔴 LOGIN (ADMIN)
+// ==========================================
 exports.adminLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
 
-    //  SECURITY: Only allow users with 'admin' or 'owner' roles
+    // SECURITY: Only allow users with 'admin' or 'owner' roles
     if (!user || (user.role !== "admin" && user.role !== "owner")) {
       return res.status(403).json({
         success: false,
@@ -48,13 +50,16 @@ exports.adminLogin = async (req, res) => {
       },
     });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
+  console.log("FULL ERROR:", err);
+  console.log("RESPONSE:", err.response?.data);
+
+  alert(err.response?.data?.message || err.message);
+}
 };
 
 exports.getAllUsers = async (req, res) => {
   try {
-    const users = await User.find().select("-password"); // Password hide kar diya
+    const users = await User.find().select("-password");
     
     res.json({
       success: true,
@@ -68,17 +73,12 @@ exports.getAllUsers = async (req, res) => {
 
 exports.getDashboardStats = async (req, res) => {
   try {
-    // Database se total normal users count nikalna
     const totalUsers = await User.countDocuments({ role: "user" });
 
-    // TODO: Jab Ads/Properties aur Payments model ban jayenge, tab inki real queries lagayenge:
-    // const activeAds = await Ad.countDocuments({ status: "active" });
-    // const pendingApprovals = await Ad.countDocuments({ status: "pending" });
-    
-    // Abhi ke liye dummy data bhej rahe hain frontend format match karne ke liye
+    // Dummy data for now
     const statsData = {
-      revenue: 145000,       // Dummy Revenue
-      activeAds: 1240,       // Dummy Active Ads
+      revenue: 145000,       
+      activeAds: 1240,       
       pending: 14,           
       reports: totalUsers,  
     };
@@ -94,25 +94,19 @@ exports.getDashboardStats = async (req, res) => {
 
 exports.toggleUserBlockStatus = async (req, res) => {
   try {
-    const { id } = req.params; // URL se user ki ID nikalenge
-    
-    // Database mein user ko find karein
+    const { id } = req.params; 
     const user = await User.findById(id);
 
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    // Admin khud ko ya dusre admin ko block na kar sake (Security)
     if (user.role === "admin" || user.role === "owner") {
       return res.status(403).json({ success: false, message: "Cannot block an Admin" });
     }
 
-    // Status toggle logic (Agar pehle se BLOCKED hai toh ACTIVE karo, warna BLOCKED)
-    // Note: Agar DB me pehle status nahi tha, toh usey BLOCKED set kar dega
     user.status = user.status === "BLOCKED" ? "ACTIVE" : "BLOCKED";
-    
-    await user.save(); // Database update karein
+    await user.save(); 
 
     res.json({
       success: true,
@@ -128,16 +122,18 @@ exports.toggleUserBlockStatus = async (req, res) => {
   }
 };
 
-//  GET PROPERTIES (By Status - Pending/Live/Rejected)
+// ==========================================
+// 🏠 PROPERTIES MANAGEMENT
+// ==========================================
+
 exports.getProperties = async (req, res) => {
   try {
     const { status } = req.query;
     const query = status ? { status } : {};
 
-    // .populate() se owner ki details bhi aa jayengi (sirf name, email, phone)
     const properties = await Property.find(query)
       .populate("owner_id", "name email phone")
-      .sort({ createdAt: -1 }); // Nayi property sabse upar
+      .sort({ createdAt: -1 });
 
     res.json({
       success: true,
@@ -149,30 +145,84 @@ exports.getProperties = async (req, res) => {
   }
 };
 
-// APPROVE PROPERTY (Status: pending -> live)
-exports.approveProperty = async (req, res) => {
+// 🚀 NAYA APPROVE AD FUNCTION (With Expiry Logic)
+// exports.approveAd = async (req, res) => {
+//   try {
+//       // Postman ya frontend se ad_id aur plan_type aayega
+//       const { ad_id, plan_type } = req.body; 
+
+//       // TESTING LOGIC: Standard = 2 min, Double = 4 min
+//       let durationInMinutes = plan_type === 'Standard' ? 2 : 4; 
+      
+//       const expiryDate = new Date();
+//       expiryDate.setMinutes(expiryDate.getMinutes() + durationInMinutes); 
+
+//       // Asli logic (Future me isey use karna):
+//       // let days = plan_type === 'Standard' ? 8 : 16;
+//       // expiryDate.setDate(expiryDate.getDate() + days);
+
+//       const property = await Property.findOneAndUpdate(
+//           { ad_id: ad_id }, 
+//           { 
+//               status: 'live', 
+//               expiry_at: expiryDate 
+//           },
+//           { new: true } 
+//       );
+
+//       if (!property) {
+//           return res.status(404).json({ success: false, message: "Property not found" });
+//       }
+
+//       res.json({
+//           success: true,
+//           message: `Property successfully approved! It is now LIVE and will expire in ${durationInMinutes} minutes.`,
+//           data: property
+//       });
+//   } catch (err) {
+//       res.status(500).json({ success: false, message: err.message });
+//   }
+// };
+
+// 🚀 NAYA APPROVE AD FUNCTION (Testing Expiry ke sath)
+exports.approveAd = async (req, res) => {
   try {
-    const property = await Property.findByIdAndUpdate(
-      req.params.id,
-      { status: "live" }, // Schema ke hisaab se "live"
-      { new: true }
-    );
+      // 🚀 URL se Property ki asli _id aayegi
+      const { id } = req.params; 
+      // const { plan_type } = req.body; // Agar future me bhejta hai toh
 
-    if (!property) {
-      return res.status(404).json({ success: false, message: "Property not found" });
-    }
+      // 🚀 TESTING LOGIC: Hum sidha 2 minute wala time set kar rahe hain
+      const expiryDate = new Date();
+      expiryDate.setMinutes(expiryDate.getMinutes() + 2); // Sirf 2 minute baad expire
 
-    res.json({
-      success: true,
-      message: "Property successfully approved and is now live!",
-      data: property
-    });
+      // ad_id ki jagah seedha _id (MongoDB id) se find aur update kar rahe hain
+      const property = await Property.findByIdAndUpdate(
+          id, 
+          { 
+              status: 'live', 
+              expiry_at: expiryDate 
+          },
+          { new: true } 
+      );
+
+      if (!property) {
+          return res.status(404).json({ success: false, message: "Property not found" });
+      }
+
+      res.json({
+          success: true,
+          message: `Property is now LIVE! It will expire automatically in 2 minutes for testing.`,
+          data: property
+      });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+      res.status(500).json({ success: false, message: err.message });
   }
 };
 
-//  REJECT PROPERTY (Status: pending -> rejected)
+
+
+
+// REJECT PROPERTY (Status: pending -> rejected)
 exports.rejectProperty = async (req, res) => {
   try {
     const { reason } = req.body;
@@ -202,26 +252,20 @@ exports.rejectProperty = async (req, res) => {
 
 
 // ==========================================
-// 🟢 GET SETTINGS (Data Frontend ko bhejna)
+// ⚙️ SETTINGS MANAGEMENT
 // ==========================================
 exports.getSettings = async (req, res) => {
   try {
     let settings = await Settings.findOne();
-    
-    // Agar database me koi setting nahi hai, toh ek default bana do
     if (!settings) {
       settings = await Settings.create({});
     }
-
     res.json({ success: true, data: settings });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 };
 
-// ==========================================
-// 🔵 UPDATE SETTINGS (Frontend se naya data save karna)
-// ==========================================
 exports.updateSettings = async (req, res) => {
   try {
     const { standardDays, standardPrice, premiumDays, premiumPrice, qrImage } = req.body;
@@ -232,7 +276,6 @@ exports.updateSettings = async (req, res) => {
       settings = new Settings({});
     }
 
-    // Naya data update kar rahe hain
     if (standardDays) settings.standardDays = standardDays;
     if (standardPrice) settings.standardPrice = standardPrice;
     if (premiumDays) settings.premiumDays = premiumDays;
@@ -247,12 +290,14 @@ exports.updateSettings = async (req, res) => {
   }
 };
 
-// 🟢 GET ALL REPORTS (Admin ke liye)
+// ==========================================
+// ⚠️ REPORTS MANAGEMENT
+// ==========================================
 exports.getAllReports = async (req, res) => {
   try {
     const reports = await Report.find()
-      .populate("propertyId", "title images") // Property ki thodi details
-      .populate("reportedBy", "name email")    // Reporter ki details
+      .populate("propertyId", "title images") 
+      .populate("reportedBy", "name email")    
       .sort({ createdAt: -1 });
 
     res.json({ success: true, data: reports });
@@ -261,15 +306,11 @@ exports.getAllReports = async (req, res) => {
   }
 };
 
-// 🔴 DELETE REPORTED PROPERTY (Ad ko remove karna)
 exports.deleteReportedProperty = async (req, res) => {
   try {
     const { propertyId, reportId } = req.params;
 
-    // 1. Property delete karein
     await Property.findByIdAndDelete(propertyId);
-
-    // 2. Report ko 'resolved' mark karein
     await Report.findByIdAndUpdate(reportId, { status: "resolved" });
 
     res.json({ success: true, message: "Property removed and report resolved" });
@@ -278,7 +319,6 @@ exports.deleteReportedProperty = async (req, res) => {
   }
 };
 
-// 🟡 IGNORE REPORT (Agar report fake nikli)
 exports.ignoreReport = async (req, res) => {
   try {
     const { id } = req.params;

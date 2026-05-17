@@ -7,7 +7,7 @@ const {
   getDashboardStats, 
   toggleUserBlockStatus,
   getProperties,
-  approveProperty,
+  approveAd,
   rejectProperty,
   updateSettings,
   getSettings,
@@ -25,14 +25,11 @@ router.get("/users", auth, isAdmin, getAllUsers);
 router.put("/users/:id/block", auth, isAdmin, toggleUserBlockStatus);
 
 router.get("/properties", auth, isAdmin, getProperties);
-router.put("/properties/:id/approve", auth, isAdmin, approveProperty);
-router.put("/properties/:id/reject", auth, isAdmin, rejectProperty);
 router.get("/dashboard-stats", auth, isAdmin, getDashboardStats);
-
-
-// 5. Settings Routes (Protected)
 // URL: GET /api/admin/settings
 router.get("/settings", auth, isAdmin, getSettings);
+router.put('/properties/:id/reject', auth, isAdmin, rejectProperty);
+router.put('/properties/:id/approve', auth, isAdmin, approveAd);
 
 // URL: PUT /api/admin/settings
 router.put("/settings", auth, isAdmin, updateSettings);
@@ -46,4 +43,4 @@ router.delete("/reports/delete-property/:propertyId/:reportId", auth, isAdmin, d
 router.put("/reports/ignore/:id", auth, isAdmin, ignoreReport);
 
 
-module.exports = router;
+module.exports = router

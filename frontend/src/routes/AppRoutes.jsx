@@ -13,6 +13,7 @@ import PendingApprovals from "../pages/PendingApprovals";
 import ActiveProperties from "../pages/ActiveProperties";
 import Reports from "../pages/Reports";
 import Support from "../pages/Support";
+import AllProperties from "../pages/AllProperties";
 
 const AppRoutes = () => {
   return (
@@ -31,6 +32,7 @@ const AppRoutes = () => {
           <Route path="/pending-approvals" element={<PendingApprovals />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/support" element={<Support />} />
+          <Route path="/allproperty" element={<AllProperties/>} />
         </Route>
       </Route>
     </Routes>

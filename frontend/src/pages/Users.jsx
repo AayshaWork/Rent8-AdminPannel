@@ -21,7 +21,7 @@ const Users = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const res = await API.get('/users'); // Aapka working route
+      const res = await API.get('/admin/users'); // Aapka working route
       
       if (res.data.success) {
         // ✅ Email, Role aur isPremium ko bhi map kar liya hai
@@ -52,7 +52,7 @@ const Users = () => {
   // 🚀 BLOCK / UNBLOCK LOGIC (Real API Call)
   const toggleBlockStatus = async (userId) => {
     try {
-      const res = await API.put(`/users/${userId}/block`); // Aapka working route
+      const res = await API.put(`/admin/users/${userId}/block`); // Aapka working route
       
       if (res.data.success) {
         setUsers(users.map(user => {
