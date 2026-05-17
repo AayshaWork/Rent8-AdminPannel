@@ -1,5 +1,3 @@
-
-
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -38,6 +36,7 @@ const userRoutes = require("./routes/userRoutes");
 const propertyRoutes = require("./routes/propertyRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const myAdsRoutes = require('./routes/myAdsRoutes');
+const adDetailsRoutes = require('./routes/adDetailsRoutes');
 
 // 6. Mount Routes (Sabko /api ke andar daal diya)
 app.use("/api/auth", authRoutes);
@@ -46,6 +45,7 @@ app.use("/api/property", propertyRoutes);
 app.use("/api", userRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use('/api/my-ads', myAdsRoutes);
+app.use('/api/ad-details', adDetailsRoutes);
 // 7. Global Error Handler (Hamesha sabse last mein aayega) 
 app.use((err, req, res, next) => {
   console.error(err.stack);

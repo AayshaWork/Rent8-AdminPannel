@@ -2,6 +2,9 @@ const mongoose = require("mongoose");
 
 const propertySchema = new mongoose.Schema(
   {
+
+
+
     ad_id: { 
       type: String,
       unique: true,
@@ -12,6 +15,7 @@ const propertySchema = new mongoose.Schema(
       ref: "User",
       required: true
     },
+  
     title: { 
       type: String, 
       required: true,
@@ -39,6 +43,8 @@ const propertySchema = new mongoose.Schema(
         enum: ['Point'], 
        
       },
+      lat: { type: Number },
+    lng: { type: Number },
       coordinates: {
         type: [Number], // [longitude, latitude]
         required: false 
@@ -58,10 +64,11 @@ const propertySchema = new mongoose.Schema(
       enum: ["phone", "app_id", "both"],
       default: "both"
     },
+    short_location: { type: String, default: "Location not available" },
     status: {
       type: String,
       // 🚀 NAYA: "pending_payment" add kiya list mein aur default banaya
-      enum: ["pending_payment", "pending_approval", "live", "rejected", "deactivated", "expired"],
+      enum: ["pending_payment", "pending_approval", "live", "rejected", "deactivated", "expired", "cancelled"],
       default: "pending_payment" 
     }, 
     reject_reason: { 
